@@ -2,7 +2,6 @@ up:
 	@mkdir -p /home/xbasabe/data/
 	@mkdir -p /home/xbasabe/data/wp-files/
 	@mkdir -p /home/xbasabe/data/wp-db/
-	#@mkdir -p /home/xbasabe/data/website-files/
 	docker compose -f srcs/docker-compose.yml up --build -d 
 
 down:
