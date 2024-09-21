@@ -1,0 +1,16 @@
+FROM alpine:3.19
+
+# Actualizar e instalar mariadb
+RUN apk -U upgrade && apk add mariadb
+
+# Inicializar la base de datos de MariaDB
+RUN mariadb-install-db --user=mysql --datadir=/var/lib/mysql --skip-test-db
+
+# Crear el directorio de mysqld si no existe
+RUN mkdir -p /run/mysqld/
+
+# Copiar los archivos de inicialización y el script de entrada
+COPY tool/mariadb-init.sql tool/entrypoint.sh /etc/.
+
+# Definir el entrypoint
+ENTRYPOINT ["sh", "/etc/entrypoint.sh"]
