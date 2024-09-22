@@ -1,21 +1,34 @@
-FROM alpine:3.17
+FROM alpine:3.19
 
-RUN apk -U upgrade && apk add php php-phar php-fpm php-mysqli php-iconv mysql-client \
- php-json php-curl php-dom php-exif php-fileinfo php-mbstring php-openssl php-xml php-zip \
- php-tokenizer php-session
+# Upgrade and install necessary PHP and MySQL packages
+RUN apk --no-cache upgrade && \
+    apk add --no-cache php php-phar php-fpm php-mysqli php-iconv mariadb-client \
+    php-json php-curl php-dom php-exif php-fileinfo php-mbstring php-openssl php-xml php-zip \
+    php-tokenizer php-session
+
+# Copy PHP-FPM configuration
 COPY conf/php.conf /etc/php81/php-fpm.d/www.conf
 
+# Set the working directory
 WORKDIR /var/www/xbasabe.42.fr
 
-RUN wget https://wordpress.org/wordpress-6.2.2.tar.gz -O latest.tar.gz
-RUN chmod +x latest.tar.gz
-RUN tar -xzvf latest.tar.gz && rm latest.tar.gz && mv wordpress/* . && rmdir wordpress
+# Download and extract the latest WordPress
+RUN wget https://wordpress.org/wordpress-6.2.2.tar.gz -O latest.tar.gz && \
+    tar -xzvf latest.tar.gz && \
+    rm latest.tar.gz && \
+    mv wordpress/* . && \
+    rmdir wordpress
 
-RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
- && chmod +x wp-cli.phar && mv wp-cli.phar /bin/wp
- 
+# Install WP-CLI tool
+RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x wp-cli.phar && \
+    mv wp-cli.phar /usr/local/bin/wp
+
+# Copy the custom entrypoint script
 COPY ./tool/entrypoint.sh /etc/entrypoint.sh
 
+# Expose the PHP-FPM port
 EXPOSE 9000
 
+# Set the entrypoint script
 ENTRYPOINT ["sh", "/etc/entrypoint.sh"]
